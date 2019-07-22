@@ -2,10 +2,9 @@ package field
 
 import (
 	"bytes"
-	"fmt"
 	"strings"
 
-	"github.com/mercatormaps/go-shapefile/cpg"
+	"golang.org/x/text/encoding"
 )
 
 // Character field is a string of characters.
@@ -15,20 +14,18 @@ type Character struct {
 }
 
 // DecodeCharacter decodes a single character field with the specified encoding.
-func DecodeCharacter(buf []byte, name string, encoding cpg.CharacterEncoding) (*Character, error) {
+func DecodeCharacter(buf []byte, name string, decoder *encoding.Decoder) (*Character, error) {
 	val := bytes.Trim(buf, "\x00")
 
-	switch encoding {
-	case cpg.EncodingASCII:
-		fallthrough
-	case cpg.EncodingUTF8:
-		return &Character{
-			Field:  Field{name: name},
-			String: strings.TrimSpace(string(val)),
-		}, nil
-	default:
-		return nil, fmt.Errorf("unsupported character encoding")
+	decoded, err := decoder.Bytes(val)
+	if err != nil {
+		return nil, err
 	}
+
+	return &Character{
+		Field:  Field{name: name},
+		String: strings.TrimSpace(string(decoded)),
+	}, nil
 }
 
 // Value returns the field value.

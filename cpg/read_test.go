@@ -6,17 +6,18 @@ import (
 
 	"github.com/mercatormaps/go-shapefile/cpg"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/text/encoding"
 )
 
 func TestRead(t *testing.T) {
 	tests := []struct {
 		in  string
-		out cpg.CharacterEncoding
+		out encoding.Encoding
 	}{
-		{"ASCII", cpg.EncodingASCII},
-		{"UTF-8", cpg.EncodingUTF8},
-		{"UTF8", cpg.EncodingUTF8},
-		{"iicsa", cpg.EncodingUnknown},
+		{"ASCII", encoding.Nop},
+		{"UTF-8", encoding.Nop},
+		{"UTF8", encoding.Nop},
+		{"iicsa", encoding.Nop},
 	}
 
 	for _, tt := range tests {

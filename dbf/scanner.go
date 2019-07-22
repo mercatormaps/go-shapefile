@@ -7,6 +7,7 @@ import (
 
 	"github.com/mercatormaps/go-shapefile/dbf/dbase5"
 	"github.com/pkg/errors"
+	"golang.org/x/text/encoding"
 )
 
 // Version is the dBase version or "level".
@@ -102,6 +103,8 @@ func (s *Scanner) Scan(opts ...Option) error {
 		return errors.Wrap(err, "failed to parse header")
 	}
 
+	decoder := conf.CharacterEncoding().NewDecoder()
+
 	s.scanOnce.Do(func() {
 		go func() {
 			defer close(s.recordsCh)
@@ -112,7 +115,7 @@ func (s *Scanner) Scan(opts ...Option) error {
 					s.setErr(err)
 					return
 				}
-				s.decodeRecord(rec, conf)
+				s.decodeRecord(rec, conf, decoder)
 			}
 
 			buf := make([]byte, 1)
@@ -148,10 +151,10 @@ func (s *Scanner) Err() error {
 	return s.err
 }
 
-func (s *Scanner) decodeRecord(buf []byte, conf *config) {
+func (s *Scanner) decodeRecord(buf []byte, conf *config, decoder *encoding.Decoder) {
 	switch s.version {
 	case DBaseLevel5:
-		rec, err := dbase5.DecodeRecord(buf, s.header.(*dbase5.Header), conf)
+		rec, err := dbase5.DecodeRecord(buf, s.header.(*dbase5.Header), conf, decoder)
 		if err != nil {
 			s.setErr(NewError(err, s.num))
 			return

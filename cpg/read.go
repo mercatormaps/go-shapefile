@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"golang.org/x/text/encoding"
 )
 
 // Read a .cpg file containing a character encoding.
-func Read(r io.Reader) (CharacterEncoding, error) {
+func Read(r io.Reader) (encoding.Encoding, error) {
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		s := strings.TrimSpace(scanner.Text())
@@ -19,14 +21,14 @@ func Read(r io.Reader) (CharacterEncoding, error) {
 		s = strings.ToUpper(s)
 		switch s {
 		case "ASCII":
-			return EncodingASCII, nil
+			return encoding.Nop, nil
 		case "UTF8":
 			fallthrough
 		case "UTF-8":
-			return EncodingUTF8, nil
+			return encoding.Nop, nil
 		default:
-			return EncodingUnknown, nil
+			return encoding.Nop, nil
 		}
 	}
-	return EncodingUnknown, fmt.Errorf("invalid format")
+	return nil, fmt.Errorf("invalid format")
 }

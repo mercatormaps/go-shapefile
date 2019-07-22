@@ -1,9 +1,9 @@
 package shapefile
 
 import (
-	"github.com/mercatormaps/go-shapefile/cpg"
 	"github.com/mercatormaps/go-shapefile/dbf"
 	"github.com/mercatormaps/go-shapefile/shp"
+	"golang.org/x/text/encoding"
 )
 
 // Option funcs can be passed to NewScanner().
@@ -17,7 +17,7 @@ func PointPrecision(p uint) Option {
 }
 
 // CharacterEncoding sets dbf.CharacterEncoding.
-func CharacterEncoding(enc cpg.CharacterEncoding) Option {
+func CharacterEncoding(enc encoding.Encoding) Option {
 	return func(o *options) {
 		o.dbf = append(o.dbf, dbf.CharacterEncoding(enc))
 	}

@@ -12,7 +12,12 @@ import (
 	"github.com/mercatormaps/go-shapefile/dbf/dbase5"
 	"github.com/olekukonko/tablewriter"
 	"github.com/pkg/errors"
+	"golang.org/x/net/html/charset"
 	"gopkg.in/alecthomas/kingpin.v2"
+)
+
+var (
+	readDbfEncoding *string
 )
 
 func main() {
@@ -26,6 +31,7 @@ func main() {
 	readFields := readCommand.Flag("fields", "Only the specified field names.").Short('f').Strings()
 	readListFields := readCommand.Flag("list-fields", "List fields only - no data.").Bool()
 	pretty := readCommand.Flag("pretty", "Enable pretty-printing.").Short('p').Bool()
+	readDbfEncoding = readCommand.Flag("encoding", "Encoding for read dbf file").Short('e').String()
 
 	var err error
 	switch kingpin.Parse() {
@@ -81,6 +87,15 @@ func dataFromZip(path string, fields *[]string, meta, pretty bool) error {
 		}
 	}
 
+	if readDbfEncoding != nil && *readDbfEncoding != "" {
+		encoding := *readDbfEncoding
+		enc, _ := charset.Lookup(encoding)
+		if enc == nil {
+			return errors.Errorf("failed to parse encoding: %s", encoding)
+		}
+		s.AddOptions(shapefile.CharacterEncoding(enc))
+	}
+
 	if meta {
 		info, err := s.Info()
 		if err != nil {
@@ -114,6 +129,16 @@ func dataFromExtracted(shpPath, dbfPath string, fields *[]string, pretty bool) e
 	} else {
 		s = shapefile.NewScanner(shpFile, dbfFile, shapefile.FilterFields(*fields...))
 	}
+
+	if readDbfEncoding != nil && *readDbfEncoding != "" {
+		encoding := *readDbfEncoding
+		enc, _ := charset.Lookup(encoding)
+		if enc == nil {
+			return errors.Errorf("failed to parse encoding: %s", encoding)
+		}
+		s.AddOptions(shapefile.CharacterEncoding(enc))
+	}
+
 	return dataTable(s, fields, pretty)
 }
 

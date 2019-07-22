@@ -3,9 +3,9 @@ package dbase5
 import (
 	"fmt"
 
-	"github.com/mercatormaps/go-shapefile/cpg"
 	"github.com/mercatormaps/go-shapefile/dbf/field"
 	"github.com/pkg/errors"
+	"golang.org/x/text/encoding"
 )
 
 // Record represents a single record, primarly consisting of a set of fields.
@@ -23,12 +23,12 @@ type Field interface {
 
 // Config provides config for record parsing.
 type Config interface {
-	CharacterEncoding() cpg.CharacterEncoding
+	CharacterEncoding() encoding.Encoding
 	FilteredFields() []string
 }
 
 // DecodeRecord decodes a dBase 5 single record.
-func DecodeRecord(buf []byte, header *Header, conf Config) (*Record, error) {
+func DecodeRecord(buf []byte, header *Header, conf Config, decoder *encoding.Decoder) (*Record, error) {
 	if len(buf) < 1 {
 		return nil, fmt.Errorf("expecting 1 byte but have %d", len(buf))
 	}
@@ -65,7 +65,7 @@ func DecodeRecord(buf []byte, header *Header, conf Config) (*Record, error) {
 
 		switch desc.Type {
 		case CharacterType:
-			f, err = field.DecodeCharacter(buf[start:end], desc.name, conf.CharacterEncoding())
+			f, err = field.DecodeCharacter(buf[start:end], desc.name, decoder)
 		case FloatingPointType:
 			f, err = field.DecodeFloatingPoint(buf[start:end], desc.name)
 		case NumericType:
